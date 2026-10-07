@@ -277,63 +277,47 @@ def plot_stresses(data, rheo_n, arrows = False):
     
     sigIn  = data[rheo_n]['sigIn']
     sigIIn = data[rheo_n]['sigIIn']
-    sigI   = data[rheo_n]['sigI']
-    sigII  = data[rheo_n]['sigII']
+    sigI  = data[rheo_n]['sigI']
+    sigII = data[rheo_n]['sigII']
+    sig1   = data[rheo_n]['sig1']
+    sig2  = data[rheo_n]['sig2']
     eI     = data['eI']
     eII    = data['eII']
     
+    
+    #----------------------------------------------------
+    # Stress invariants 
+    
     fig, ax = plt.subplots(figsize = (8, 6))
 
-
-    plt.scatter(sigIn.flatten(), sigIIn.flatten(), color = 'royalblue')
+    plt.scatter(sigI.flatten(), sigII.flatten(), color = 'royalblue')
     
     if rheo_n == 'svp':
         elli=Ellipse(xy=((-1)/2.,0), width=(1)/ellip_ratio, height=(1), angle=-90,edgecolor='b', fc='None', lw=0.5, color = 'k')
         ax.add_patch(elli)
+        plt.ylim(-0.25,0.4)
+        plt.xlim(-1.2,0.2)
         
     if arrows :
         qpfac=10
 
         eu=np.hypot(eI[::qpfac,::qpfac],eII[::qpfac,::qpfac])
-        ax.quiver(sigIn[::qpfac,::qpfac],sigIIn[::qpfac,::qpfac],eI[::qpfac,::qpfac]/eu,eII[::qpfac,::qpfac]/eu, scale=10, color='darkgreen')
-
-    plt.ylim(-0.25,0.4)
-    plt.xlim(-1.2,0.2)
+        
+        ax.quiver(sigI[::qpfac,::qpfac],sigII[::qpfac,::qpfac],
+                  eI[::qpfac,::qpfac]/eu,eII[::qpfac,::qpfac]/eu, 
+                  scale=10, color='darkgreen')
     
     plt.xlabel(r'$\sigma_\mathrm{I}/P$')
     plt.ylabel(r'$\sigma_\mathrm{II}/P$')
     
-    plt.savefig('stress.png', dpi = 500)
+    plt.savefig('stress_inv_{}.png'.format(rheo_n), dpi = 500)
     
+    fig, ax = plt.subplots(figsize = (8, 6))
     
+    plt.scatter(sig2.flatten(), sig1.flatten(), color = 'royalblue',zorder=1)
+    plt.grid(zorder = 0)
     
+    plt.xlabel(r'$\sigma_2$')
+    plt.ylabel(r'$\sigma_1$')
     
-
-    
-    
-    
-    
-    
-        
-        
-    
-    
-    
-    
-
-    
-
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-        
-    
-    
+    plt.savefig('stress_princ_{}.png'.format(rheo_n), dpi = 500)
