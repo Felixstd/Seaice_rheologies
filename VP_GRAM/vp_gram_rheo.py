@@ -137,8 +137,74 @@ def elliptical_vp(data, rheo_n):
     data[rheo_n]['eta'] = eta
     data[rheo_n]['P'] = strength_vp 
     
-def GRAM_dilat(data, rheo_n):
+def GRAM_dilat(data, rheo_n, dilat = dilat_type):
+    
+    
+    #renaming variables
+    em = data['em']
+    ep = data['ep']
+    e12 = data['e12']
+    eII = data['eII']
+    h = data['h']
+    A = data['A']
+    P_rand = data['P_rand']
+    data[rheo_n] = {}    
+    
+    #ice strength
+    P = ice_strength(h, A, eII, 'gram')
+    P_H = ice_strength(h, A, eII, 'hibler')
+    
+    mask_p_rand = (P_rand >= P_H)
+    P[mask_p_rand] = P_H[mask_p_rand]-P_rand[mask_p_rand]
+    
+    
+    
+    
+    # inertial number 
+    i_num = inertial_number(eII, P, h)
+    
+    
+    # dilatancy
+    if dilat == 'const':
+        delta = np.ones_like(h)*delta_c
+        mu = np.ones_like(h)*10*np.pi/180
+        
+        print(delta)
+    else:
+        delta = dilatancy(eII)
+        
+        # friction coefficient
+        mu = np.arctan(friction_coefficient(i_num, mu0, muinf, I0))
+    
 
+    #friction angle
+    phi = delta + mu
+    
+    mask_p = (P == P_H)
+    e_kk = np.zeros_like(h)
+    e_kk[~mask_p] = 2*eII[~mask_p]*np.tan(delta[~mask_p])
+    e_kk[mask_p] = ep[mask_p]
+    
+    eta = np.minimum(np.sin(phi)*P/(eII+1e-12), max_zeta)
+    
+    zeta = np.zeros_like(eta)
+
+    #saving in dictionnary
+    data[rheo_n]['zeta'] = zeta
+    data[rheo_n]['eta'] = eta
+    data[rheo_n]['P'] = P
+    data[rheo_n]['ep'] = e_kk
+    
+        
+    return None
+    
+def compute_viscs(data, rheo_n):
+    
+    if rheo_n == 'svp':
+        elliptical_vp(data = data, rheo_n = rheo_n)
+        
+    elif rheo_n == 'muGRAM':
+        GRAM_dilat(data = data, rheo_n = rheo_n)
         
     
     
