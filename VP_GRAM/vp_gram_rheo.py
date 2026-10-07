@@ -250,18 +250,24 @@ def compute_stress_inv(data, rheo_n):
     
     sigtmp = np.sqrt(sigm**2+4*sig12**2)
     
+    #--------------------------------------------------
+    # computing principal stresses 
     sig1 = data[rheo_n]['sig1'] = 1/2*(sigp + sigtmp)
     sig2 = data[rheo_n]['sig2'] = 1/2*(sigp - sigtmp)
     
-    data[rheo_n]['sig1n'] = sig1/press
-    data[rheo_n]['sig2n'] = sig2/press
+    # normalized
+    sig1n = sig1/press
+    sig2n = sig2/press
     
+    data[rheo_n]['sig1n'] = sig1n
+    data[rheo_n]['sig2n'] = sig2n
+    
+    #--------------------------------------------------
+    # computing stress invariants
     data[rheo_n]['sigI'] = 0.5*(sig1+sig2)
     data[rheo_n]['sigII'] = 0.5*(sig1-sig2)
 
-    sig1n = data[rheo_n]['sig1n']
-    sig2n = data[rheo_n]['sig2n']
-
+    #normalized
     data[rheo_n]['sigIn'] = 0.5*(sig1n+sig2n)
     data[rheo_n]['sigIIn'] = 0.5*(sig1n-sig2n)
     
