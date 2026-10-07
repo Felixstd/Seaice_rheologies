@@ -9,6 +9,7 @@ plt.style.use('science.mplstyle')
 def generate_data(eps_def, 
                   eps_h, 
                   eps_A,
+                  eps_P,
                   size, 
                   dx = 1000):
     """
@@ -26,8 +27,13 @@ def generate_data(eps_def,
     v = np.random.random((size,size))*eps_def
     
     #ice state vectors
-    h = np.random.random((size-1,size-1))*eps_h[0]+eps_h[1]
-    A = np.random.random((size-1,size-1))*eps_A[0]+eps_A[1]
+    if var_state:
+        h = np.random.random((size-1,size-1))*eps_h[0]+eps_h[1]
+        A = np.random.random((size-1,size-1))*eps_A[0]+eps_A[1]
+        P_rand = np.random.random((size-1,size-1))*eps_P[0]+eps_P[1]
+    else:
+        h = np.ones((size-1,size-1))
+        A = np.ones((size-1,size-1))*0.9
     
     # deformation vectors
     dudx = (u[1:,1:] - u[:-1,1:])/dx
@@ -43,6 +49,7 @@ def generate_data(eps_def,
     init_data = {'u':u, 
                  'v':v, 
                  'h':h, 'A':A, 
+                 'P_rand':P_rand,
                  'e11':e11, 'e22':e22, 
                  'e12':e12}
     
