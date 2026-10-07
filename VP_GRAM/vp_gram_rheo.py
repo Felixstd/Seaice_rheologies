@@ -70,9 +70,20 @@ def compute_strain_var(data):
     data['eII'] = data['e1'] - data['e2'] 
     
     
-def ice_strength(h, A, Pstar = 27.5e3, C = 20):
+def ice_strength(h, A, eII, type, Pstar = Pstar, C = C):
     
-    return Pstar*h*np.exp(-C*(1-A))
+    P_H = Pstar*h*np.exp(-C*(1-A)) 
+    
+    if type == 'hibler':
+        P = P_H
+        
+        
+    elif type == 'gram':
+        
+        P = np.minimum(P_H, rhoi*h*d_mean**2*eII**2/(1-A+1e-12)**2)
+        
+    return P
+
     
 
 def elliptical_vp(data, rheo_n):
