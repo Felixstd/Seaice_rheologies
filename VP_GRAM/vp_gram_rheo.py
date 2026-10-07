@@ -84,6 +84,22 @@ def ice_strength(h, A, eII, type, Pstar = Pstar, C = C):
         
     return P
 
+def inertial_number(eII, P, h, 
+                    rho = rhoi, d = d_mean):
+    
+    return eII*np.sqrt(rho*h/P)*d 
+
+def friction_coefficient(I, mu0, muinf, I0):
+    
+    delta_mu = muinf - mu0
+    
+    return mu0 + delta_mu/(I/I0+1)
+
+def dilatancy(eII, eII_max = eII_max, delta_max = delta_max):
+    
+    eII_ratio = eII/eII_max
+    
+    return delta_max*eII_ratio*np.exp(1-eII_ratio)
     
 
 def elliptical_vp(data, rheo_n):
