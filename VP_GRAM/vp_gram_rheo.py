@@ -115,18 +115,19 @@ def elliptical_vp(data, rheo_n):
     em = data['em']
     ep = data['ep']
     e12 = data['e12']
+    eII = data['eII']
     h = data['h']
     A = data['A']
     data[rheo_n] = {}    
+    
     #computing delta
     delta = np.sqrt(ep**2 + ellip_ratio2_inv*em**2 + 4*ellip_ratio2_inv*e12**2)+1e-12
     
     #computing ice strength
-    strength_vp = ice_strength(h, A)
+    strength_vp = ice_strength(h, A, eII, 'hibler')
     
     #computing bulk viscosity
     zeta = strength_vp/(2*delta)
-    print(strength_vp, zeta)
     zeta_cap = np.minimum(zeta, max_zeta)
     
     #computing shear viscosity
