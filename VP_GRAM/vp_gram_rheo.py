@@ -289,22 +289,11 @@ def compute_sigma(data, rheo_n):
     em = data['em']
     ep = data['ep']
     e12 = data['e12']
-    e11 = data['e11']
-    e22 = data['e22']
     
-    if rheo_n == 'svp':
         
-        data[rheo_n]['sig11'] = zeta*ep + eta*em - press/2
-        data[rheo_n]['sig22'] = zeta*ep - eta*em - press/2
-        data[rheo_n]['sig12'] = 2*e12*eta
-        
-    elif rheo_n == 'muGRAM':
-        
-        ekk_delta = data[rheo_n]['ep']
-        
-        data[rheo_n]['sig11'] = 2*eta*e11 - eta*ekk_delta - press
-        data[rheo_n]['sig22'] = 2*eta*e22 - eta*ekk_delta - press
-        data[rheo_n]['sig12'] = 2*e12*eta
+    data[rheo_n]['sig11'] = zeta*ep+eta*em-press
+    data[rheo_n]['sig22'] = zeta*ep-eta*em-press
+    data[rheo_n]['sig12'] = 2*e12*eta
         
 def compute_stress_inv(data, rheo_n):
     
@@ -312,7 +301,7 @@ def compute_stress_inv(data, rheo_n):
     sig22 = data[rheo_n]['sig22'] 
     sig12 = data[rheo_n]['sig12']
     
-    press = data[rheo_n]['P']
+    press = data[rheo_n]['press0']
     
     sigp = sig11 + sig22 
     sigm = sig11 - sig22 
