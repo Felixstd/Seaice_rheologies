@@ -5,6 +5,21 @@ from vp_gram_param import *
 
 
 plt.style.use('science.mplstyle')
+def compute_strain(u, v, dx):
+    
+    # deformation vectors
+    dudx = (u[1:,1:] - u[:-1,1:])/dx
+    dvdx = (v[1:,1:] - v[:-1,1:])/dx
+    dudy = (u[1:,1:] - u[1:,:-1])/dx
+    dvdy = (v[1:,1:] - v[1:,:-1])/dx
+    
+    e11 = dudx
+    e22 = dvdy 
+    
+    e12 = 0.5*(dudy + dvdx)   
+    
+    return e11, e22, e12
+    
 
 def generate_data(eps_def, 
                   eps_h, 
