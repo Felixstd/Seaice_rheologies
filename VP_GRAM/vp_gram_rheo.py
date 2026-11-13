@@ -21,7 +21,8 @@ def compute_strain(u, v, dx):
     return e11, e22, e12
     
 
-def generate_data(eps_def, 
+def generate_data(type_field, 
+                  eps_def, 
                   eps_h, 
                   eps_A,
                   eps_P,
@@ -38,8 +39,21 @@ def generate_data(eps_def,
     """
     
     #velocity vectors 
-    u = np.random.random((size,size))*eps_def
-    v = np.random.random((size,size))*eps_def
+    
+    if type_field == 'rand':
+        u = np.random.random((size,size))*eps_def[0] + eps_def[1]
+        v = np.random.random((size,size))*eps_def[0] + eps_def[1]
+        
+    elif type_field == 'pure_shear':
+        
+        nx, ny = size, size
+        x = np.arange(nx) * dx
+        y = np.arange(ny) * dx
+        X, Y = np.meshgrid(x, y, indexing='ij') 
+        amp = eps_def[0]
+        
+        u = amp*X
+        v = -amp*Y
     
     #ice state vectors
     if var_state:
@@ -48,18 +62,12 @@ def generate_data(eps_def,
         P_rand = np.random.random((size-1,size-1))*eps_P[0]+eps_P[1]
     else:
         h = np.ones((size-1,size-1))
-        A = np.ones((size-1,size-1))*0.9
+        A = np.ones((size-1,size-1))
+        P_rand = np.ones((size-1,size-1))*Pstar
     
-    # deformation vectors
-    dudx = (u[1:,1:] - u[:-1,1:])/dx
-    dvdx = (v[1:,1:] - v[:-1,1:])/dx
-    dudy = (u[1:,1:] - u[1:,:-1])/dx
-    dvdy = (v[1:,1:] - v[1:,:-1])/dx
+
+    e11, e22, e12 = compute_strain(u, v, dx)  
     
-    e11 = dudx
-    e22 = dvdy 
-    
-    e12 = 0.5*(dudy + dvdx)   
     
     init_data = {'u':u, 
                  'v':v, 
