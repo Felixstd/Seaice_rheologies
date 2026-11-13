@@ -149,10 +149,10 @@ def elliptical_vp(data, rheo_n):
     #saving in dictionnary
     data[rheo_n]['zeta'] = zeta_cap
     data[rheo_n]['eta'] = eta
-    data[rheo_n]['P'] = strength_vp 
-    
-def GRAM_dilat(data, rheo_n, dilat = dilat_type):
-    
+    data[rheo_n]['P'] = strength_vp/2
+    data[rheo_n]['press0'] = strength_vp
+
+def MC_ps(data, rheo_n ):
     
     #renaming variables
     em = data['em']
@@ -164,53 +164,106 @@ def GRAM_dilat(data, rheo_n, dilat = dilat_type):
     P_rand = data['P_rand']
     data[rheo_n] = {}    
     
+    mu = 0.7
+        
     #ice strength
-    P = ice_strength(h, A, eII, 'gram')
-    P_H = ice_strength(h, A, eII, 'hibler')
+    P_H = ice_strength(h, A)
     
-    mask_p_rand = (P_rand >= P_H)
-    P[mask_p_rand] = P_H[mask_p_rand]-P_rand[mask_p_rand]
+    zeta = np.minimum(P_H/np.fabs(2*ep+1e-20), max_zeta)
+    plt.figure()
+    plt.pcolormesh(zeta)
+    plt.savefig('visc_bulk1.png')
     
+    P = 0.5*P_H
     
+    plt.figure()
+    pc = plt.pcolormesh(P)
+    plt.colorbar(pc)
+    plt.savefig('P1.png')
     
+    eta = np.minimum(mu*(P - zeta*ep)/((eII+1e-20)), max_zeta)
     
-    # inertial number 
-    i_num = inertial_number(eII, P, h)
-    
-    
-    # dilatancy
-    if dilat == 'const':
-        delta = np.ones_like(h)*delta_c
-        mu = np.ones_like(h)*10*np.pi/180
-        
-        print(delta)
-    else:
-        delta = dilatancy(eII)
-        
-        # friction coefficient
-        mu = np.arctan(friction_coefficient(i_num, mu0, muinf, I0))
-    
-
-    #friction angle
-    phi = delta + mu
-    
-    mask_p = (P == P_H)
-    e_kk = np.zeros_like(h)
-    e_kk[~mask_p] = 2*eII[~mask_p]*np.tan(delta[~mask_p])
-    e_kk[mask_p] = ep[mask_p]
-    
-    eta = np.minimum(np.sin(phi)*P/(eII+1e-12), max_zeta)
-    
-    zeta = np.zeros_like(eta)
-
-    #saving in dictionnary
     data[rheo_n]['zeta'] = zeta
     data[rheo_n]['eta'] = eta
     data[rheo_n]['P'] = P
-    data[rheo_n]['ep'] = e_kk
+    data['ep'] = 0
     
+def TMC(data, rheo_n):
+    #renaming variables
+    em = data['em']
+    ep = data['ep']
+    e12 = data['e12']
+    eII = data['eII']
+    h = data['h']
+    A = data['A']
+    data[rheo_n] = {} 
+    
+    #computing delta
+    delta = np.sqrt(ep**2 + ellip_ratio2_inv*em**2 + 4*ellip_ratio2_inv*e12**2)+1e-12
+    
+    #computing ice strength
+    strength_vp = ice_strength(h, A)
+    
+    #computing bulk viscosity
+    zeta = strength_vp/(2*delta)
+    zeta_cap = np.minimum(zeta, max_zeta)
+    
+    eta_vp = zeta_cap*ellip_ratio2_inv
+    eta_MC = mu/(2*eII)*(strength_vp/2-zeta_cap*ep)
+    
+    eta = np.minimum(eta_vp, eta_MC)
+    
+    
+    data[rheo_n]['zeta'] = zeta_cap
+    data[rheo_n]['eta'] = eta
+    data[rheo_n]['P'] = strength_vp
+    
+def MC_TD(data, rheo_n):
+    
+    em = data['em']
+    ep = data['ep']
+    e12 = data['e12']
+    eII = data['eII']
+    h = data['h']
+    A = data['A']
+    data[rheo_n] = {} 
+    
+     #constants
+    gamma = 2*(1+kt)*np.sqrt((1+kt)/3)
         
-    return None
+    D = np.tan(np.radians(delta_c))
+    alpha = 0.95
+    
+    mu_mac = D+np.tan(mu)
+    
+    #ice strength
+    P = ice_strength(h, A)
+    cyc = (2-kt)/3    
+   
+    
+    gam_over_d = gamma/D 
+    gam_over_d_2 = gam_over_d**2
+    
+    #dilatancy ratio
+    l = ep/(eII+1e-20)
+    
+    x = (-(6*(1+kt)-2*gam_over_d_2*l**2) \
+            + 2*gam_over_d*l*np.sqrt(gam_over_d_2*l**2 + 3*(1+kt)))/9 + kt
+    
+    x = np.minimum(x, alpha*kt)
+    
+    zeta = (x+cyc)*P/(np.copysign(np.maximum(np.fabs(ep), 1e-20),ep)) 
+    
+    eta = -mu_mac/(2*(eII + 1e-20)*gamma)*(x-kt)*(x+1)**(1/2)*P
+    
+    press = cyc * P
+
+    ### save in the dictionary
+    data[rheo_n]['zeta'] = zeta
+    data[rheo_n]['eta'] = eta
+    data[rheo_n]['P'] = press
+    data[rheo_n]['press0'] = P
+
     
 def compute_viscs(data, rheo_n):
     
