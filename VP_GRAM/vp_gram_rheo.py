@@ -93,19 +93,9 @@ def compute_strain_var(data):
     data['eII'] = data['e1'] - data['e2'] 
     
     
-def ice_strength(h, A, eII, type, Pstar = Pstar, C = C):
+def ice_strength(h, A, Pstar = Pstar, C = C):
     
-    P_H = Pstar*h*np.exp(-C*(1-A)) 
-    
-    if type == 'hibler':
-        P = P_H
-        
-        
-    elif type == 'gram':
-        
-        P = np.minimum(P_H, rhoi*h*d_mean**2*eII**2/(1-A+1e-12)**2)
-        
-    return P
+    return Pstar*h*np.exp(-C*(1-A)) 
 
 def inertial_number(eII, P, h, 
                     rho = rhoi, d = d_mean):
@@ -147,7 +137,7 @@ def elliptical_vp(data, rheo_n):
     delta = np.sqrt(ep**2 + ellip_ratio2_inv*em**2 + 4*ellip_ratio2_inv*e12**2)+1e-12
     
     #computing ice strength
-    strength_vp = ice_strength(h, A, eII, 'hibler')
+    strength_vp = ice_strength(h, A)
     
     #computing bulk viscosity
     zeta = strength_vp/(2*delta)
