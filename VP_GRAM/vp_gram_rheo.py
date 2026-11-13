@@ -269,12 +269,15 @@ def compute_viscs(data, rheo_n):
     
     if rheo_n == 'svp':
         elliptical_vp(data = data, rheo_n = rheo_n)
+
+    elif rheo_n == 'MC_S':
+        MC_ps(data = data, rheo_n = rheo_n)
         
-    elif rheo_n == 'muGRAM':
-        GRAM_dilat(data = data, rheo_n = rheo_n)
+    elif rheo_n == 'TMC':
+        TMC(data = data, rheo_n = rheo_n)
         
-    
-    
+    elif rheo_n == 'MCTD':
+        MC_TD(data = data, rheo_n = rheo_n)
     
     
 def compute_sigma(data, rheo_n):
